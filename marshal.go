@@ -13,7 +13,8 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"runtime"
+	"reflect"
+	"runtime/debug"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -406,10 +407,7 @@ func (x *GoSNMP) sendOneRequest(packetOut *SnmpPacket,
 func (x *GoSNMP) send(packetOut *SnmpPacket, wait bool) (result *SnmpPacket, err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			var buf = make([]byte, 8192)
-			runtime.Stack(buf, true)
-
-			err = fmt.Errorf("recover: %v Stack:%v", e, string(buf))
+			err = fmt.Errorf("recover: stacktrace from panic: \n" + string(debug.Stack()))
 		}
 	}()
 
@@ -1340,7 +1338,7 @@ func (x *GoSNMP) receive() ([]byte, error) {
 	if err == io.EOF {
 		return nil, err
 	} else if err != nil {
-		return nil, fmt.Errorf("error reading from socket: %w", err)
+		return nil, fmt.Errorf("Failed to read from socket: %s", err.Error())
 	}
 
 	if n == rxBufSize {
