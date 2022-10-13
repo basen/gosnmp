@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"reflect"
 	"runtime/debug"
 	"strings"
 	"sync/atomic"
