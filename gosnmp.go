@@ -180,7 +180,7 @@ type BkUsm struct {
 }
 
 func (b *BkUsm) initBkUsm() error {
-	err := b.initSecurityKeys()
+	err := b.InitSecurityKeys()
 	if err != nil {
 		return err
 	}

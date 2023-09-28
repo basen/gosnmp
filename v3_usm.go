@@ -258,10 +258,10 @@ func (sp *UsmSecurityParameters) InitSecurityKeys() error {
 	sp.mu.Lock()
 	defer sp.mu.Unlock()
 
-	return sp.initSecurityKeysNoLock()
+	return sp.InitSecurityKeysNoLock()
 }
 
-func (sp *UsmSecurityParameters) initSecurityKeysNoLock() error {
+func (sp *UsmSecurityParameters) InitSecurityKeysNoLock() error {
 	var err error
 
 	if sp.AuthenticationProtocol > NoAuth && len(sp.SecretKey) == 0 {
@@ -311,7 +311,7 @@ func (sp *UsmSecurityParameters) setSecurityParameters(in SnmpV3SecurityParamete
 		sp.SecretKey = nil
 		sp.PrivacyKey = nil
 
-		err = sp.initSecurityKeysNoLock()
+		err = sp.InitSecurityKeysNoLock()
 		if err != nil {
 			return err
 		}
@@ -958,7 +958,7 @@ func (sp *UsmSecurityParameters) unmarshal(flags SnmpV3MsgFlags, packet []byte, 
 			sp.PrivacyKey = nil
 
 			sp.Logger.Printf("Parsed authoritativeEngineID %0x", []byte(AuthoritativeEngineID))
-			err = sp.initSecurityKeysNoLock()
+			err = sp.InitSecurityKeysNoLock()
 			if err != nil {
 				return 0, err
 			}
