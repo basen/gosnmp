@@ -252,7 +252,9 @@ func (sp *UsmSecurityParameters) Copy() SnmpV3SecurityParameters {
 func (sp *UsmSecurityParameters) getDefaultContextEngineID() string {
 	return sp.AuthoritativeEngineID
 }
-func (sp *UsmSecurityParameters) initSecurityKeys() error {
+
+// InitSecurityKeys initializes the Priv and Auth keys if needed
+func (sp *UsmSecurityParameters) InitSecurityKeys() error {
 	sp.mu.Lock()
 	defer sp.mu.Unlock()
 
@@ -601,7 +603,8 @@ func (sp *UsmSecurityParameters) usmSetSalt(newSalt interface{}) error {
 	return nil
 }
 
-func (sp *UsmSecurityParameters) initPacket(packet *SnmpPacket) error {
+// InitPacket ensures the enc salt is incremented for packets marked for AuthPriv
+func (sp *UsmSecurityParameters) InitPacket(packet *SnmpPacket) error {
 	// http://tools.ietf.org/html/rfc2574#section-8.1.1.1
 	// localDESSalt needs to be incremented on every packet.
 	newSalt := sp.usmAllocateNewSalt()
@@ -786,7 +789,7 @@ func (sp *UsmSecurityParameters) encryptPacket(scopedPdu []byte) ([]byte, error)
 		}
 		b = append([]byte{byte(OctetString)}, pduLen...)
 		scopedPdu = append(b, ciphertext...) //nolint:gocritic
-	default:
+	case DES:
 		preiv := sp.PrivacyKey[8:]
 		var iv [8]byte
 		for i := 0; i < len(iv); i++ {
@@ -840,7 +843,7 @@ func (sp *UsmSecurityParameters) decryptPacket(packet []byte, cursor int) ([]byt
 		stream.XORKeyStream(plaintext, packet[cursorTmp:])
 		copy(packet[cursor:], plaintext)
 		packet = packet[:cursor+len(plaintext)]
-	default:
+	case DES:
 		if len(packet[cursorTmp:])%des.BlockSize != 0 {
 			return nil, errors.New("error decrypting ScopedPDU: not multiple of des block size")
 		}
@@ -926,6 +929,10 @@ func (sp *UsmSecurityParameters) marshal(flags SnmpV3MsgFlags) ([]byte, error) {
 
 func (sp *UsmSecurityParameters) unmarshal(flags SnmpV3MsgFlags, packet []byte, cursor int) (int, error) {
 	var err error
+
+	if cursor >= len(packet) {
+		return 0, errors.New("error parsing SNMPV3 User Security Model parameters: end of packet")
+	}
 
 	if PDUType(packet[cursor]) != Sequence {
 		return 0, errors.New("error parsing SNMPV3 User Security Model parameters")
