@@ -1,3 +1,9 @@
+# THIS REPOSITORY IS NOT USED ANYMORE
+
+For a time we used our own fork of [gosnmp/gosnmp](https://github.com/gosnmp/gosnmp) as the development had stagnated. Currently the upstream is being developed once again and we are reasonably happy with it. None of the commits here have been moved or contributed. The BlueKing USM was replaced upstream by something else (that works).
+
+----
+
 gosnmp
 ======
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/avelino/awesome-go#networking)
